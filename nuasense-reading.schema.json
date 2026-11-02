@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/nuasense/station-schema/nuasense-reading.schema.json",
+  "title": "NuaSense station reading",
+  "description": "One reading from a weather station, in the units NuaSense stores. This is what the JSON ingest endpoint (POST /api/nuasense/v1/ingest/readings) accepts per row and what every console upload (Ecowitt, Ambient, Wunderground format) is converted into.",
+  "type": "object",
+  "required": ["time"],
+  "additionalProperties": false,
+  "properties": {
+    "time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the reading was taken, RFC 3339, UTC preferred. Not older than 90 days."
+    },
+    "temperature": { "type": "number", "minimum": -90, "maximum": 60, "description": "Air temperature, °C, in a radiation shield at ~2 m." },
+    "humidity": { "type": "number", "minimum": 0, "maximum": 100, "description": "Relative humidity, %." },
+    "pressure": { "type": "number", "minimum": 300, "maximum": 1100, "description": "Station pressure, hPa — absolute, not reduced to sea level." },
+    "light": { "type": "number", "minimum": 0, "maximum": 200000, "description": "Illuminance, lux. Global radiation in W/m² × ~126.7." },
+    "wind_speed": { "type": "number", "minimum": 0, "maximum": 120, "description": "Mean wind speed over the interval, m/s." },
+    "wind_gusts": { "type": "number", "minimum": 0, "maximum": 150, "description": "Peak gust over the interval, m/s." },
+    "wind_direction": { "type": "number", "minimum": 0, "maximum": 360, "description": "Direction the wind comes from, degrees clockwise from north." },
+    "rain_mm": { "type": "number", "minimum": 0, "maximum": 300, "description": "Rain since the previous reading, mm. Console uploads carry running counters; NuaSense turns them into this." },
+    "rain_pulses": { "type": "number", "minimum": 0, "maximum": 10000, "description": "Legacy: tipping-bucket pulses since the previous reading, summed as 1 pulse = 1 mm. Prefer rain_mm." }
+  },
+  "examples": [
+    { "time": "2026-11-02T15:02:00Z", "temperature": 17.4, "humidity": 90, "pressure": 759.9, "light": 4134, "wind_speed": 2.0, "wind_gusts": 4.5, "wind_direction": 110, "rain_mm": 0.0 }
+  ]
+}
