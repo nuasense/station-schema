@@ -13,7 +13,7 @@ What the NuaSense station receiver reads from each upload format, and the conver
 | `windspeedmph` | `wind_speed` | mph × 0.44704 |
 | `windgustmph` | `wind_gusts` | mph × 0.44704 |
 | `winddir` | `wind_direction` | as is |
-| `solarradiation` | `light` | W/m² × 126.7 |
+| `solarradiation` | `light` | W/m² × 120 |
 | `yearlyrainin` (then `totalrainin`, `dailyrainin`) | `rain_mm` | the counter's increase since the previous accepted reading, inches × 25.4; a counter that resets is treated as a new start, not as negative rain |
 | `PASSKEY` | identity | the station's path is bound to the first PASSKEY that uses it |
 
@@ -30,7 +30,7 @@ Same fields and conversions as Ecowitt; `PASSKEY` is the console's MAC address.
 | `humidity` | `humidity` | as is |
 | `baromin` | `pressure` | sea-level inHg → station pressure from the station's altitude |
 | `windspeedmph`, `windgustmph`, `winddir` | wind | as above |
-| `solarradiation` | `light` | W/m² × 126.7 |
+| `solarradiation` | `light` | W/m² × 120 |
 | `rainin` / `dailyrainin` | `rain_mm` | counter increase, inches × 25.4 |
 | `PASSWORD` (fallback `ID`) | identity | the station's token |
 

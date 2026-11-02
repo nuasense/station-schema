@@ -27,6 +27,7 @@ Anything outside a range is refused with the offending row named: a sensor wired
 |---|---|---|
 | `http://ingest.nuasense.com/station/<token>` | consoles and bridges (Ecowitt, Ambient, Wunderground mode; weewx, Meteobridge, Node-RED) | the console's own format; converted to the reading above |
 | `POST https://api.nuasense.com/api/nuasense/v1/ingest/readings` | integrators with an API key | `{"station_id": "...", "readings": [ reading, … ]}`, ≤ 500 rows, all-or-nothing |
+| `POST https://api.nuasense.com/lorawan/<token>` | LoRaWAN networks: The Things Stack webhook, ChirpStack HTTP integration (`?event=up`) | the network's uplink JSON; decoded fields are read by name (`temperature`, `humidity`, `pressure`, `wind_speed`, `wind_gusts`, `wind_direction`, `light`/`irradiation`, `rainfall_total` or `rain`; SenseCAP `messages[]`), converted to the reading above |
 
 Packages: [node-red-contrib-nuasense](https://github.com/nuasense/node-red-contrib-nuasense) · [weewx-nuasense](https://github.com/nuasense/weewx-nuasense) · [homeassistant-nuasense](https://github.com/nuasense/homeassistant-nuasense).
 

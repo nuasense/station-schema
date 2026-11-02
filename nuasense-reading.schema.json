@@ -15,7 +15,7 @@
     "temperature": { "type": "number", "minimum": -90, "maximum": 60, "description": "Air temperature, °C, in a radiation shield at ~2 m." },
     "humidity": { "type": "number", "minimum": 0, "maximum": 100, "description": "Relative humidity, %." },
     "pressure": { "type": "number", "minimum": 300, "maximum": 1100, "description": "Station pressure, hPa — absolute, not reduced to sea level." },
-    "light": { "type": "number", "minimum": 0, "maximum": 200000, "description": "Illuminance, lux. Global radiation in W/m² × ~126.7." },
+    "light": { "type": "number", "minimum": 0, "maximum": 200000, "description": "Illuminance, lux. Global radiation in W/m² × 120." },
     "wind_speed": { "type": "number", "minimum": 0, "maximum": 120, "description": "Mean wind speed over the interval, m/s." },
     "wind_gusts": { "type": "number", "minimum": 0, "maximum": 150, "description": "Peak gust over the interval, m/s." },
     "wind_direction": { "type": "number", "minimum": 0, "maximum": 360, "description": "Direction the wind comes from, degrees clockwise from north." },
