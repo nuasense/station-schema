@@ -1,28 +1,586 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/nuasense/station-schema/nuasense-reading.schema.json",
-  "title": "NuaSense station reading",
-  "description": "One reading from a weather station, in the units NuaSense stores. This is what the JSON ingest endpoint (POST /api/nuasense/v1/ingest/readings) accepts per row and what every console upload (Ecowitt, Ambient, Wunderground format) is converted into.",
+  "title": "NuaSense reading",
+  "description": "One reading from one station: weather, soil, water, greenhouse, livestock housing, beehive, storage, transport, air and energy along an agricultural chain. Names and units are fixed; a field that is not listed is refused. At most 40 values per reading. Generated from the receiver's vocabulary by node-back-end/scripts/build_reading_schema.js.",
   "type": "object",
-  "required": ["time"],
   "additionalProperties": false,
+  "minProperties": 1,
   "properties": {
     "time": {
       "type": "string",
       "format": "date-time",
-      "description": "When the reading was taken, RFC 3339, UTC preferred. Not older than 90 days."
+      "description": "RFC 3339. Required in the JSON API (POST /api/nuasense/v1/ingest/readings); ignored on a push path, where the receive time is the reading's time."
     },
-    "temperature": { "type": "number", "minimum": -90, "maximum": 60, "description": "Air temperature, °C, in a radiation shield at ~2 m." },
-    "humidity": { "type": "number", "minimum": 0, "maximum": 100, "description": "Relative humidity, %." },
-    "pressure": { "type": "number", "minimum": 300, "maximum": 1100, "description": "Station pressure, hPa — absolute, not reduced to sea level." },
-    "light": { "type": "number", "minimum": 0, "maximum": 200000, "description": "Illuminance, lux. Global radiation in W/m² × 120." },
-    "wind_speed": { "type": "number", "minimum": 0, "maximum": 120, "description": "Mean wind speed over the interval, m/s." },
-    "wind_gusts": { "type": "number", "minimum": 0, "maximum": 150, "description": "Peak gust over the interval, m/s." },
-    "wind_direction": { "type": "number", "minimum": 0, "maximum": 360, "description": "Direction the wind comes from, degrees clockwise from north." },
-    "rain_mm": { "type": "number", "minimum": 0, "maximum": 300, "description": "Rain since the previous reading, mm. Console uploads carry running counters; NuaSense turns them into this." },
-    "rain_pulses": { "type": "number", "minimum": 0, "maximum": 10000, "description": "Legacy: tipping-bucket pulses since the previous reading, summed as 1 pulse = 1 mm. Prefer rain_mm." }
+    "device_id": {
+      "type": "string",
+      "maxLength": 48,
+      "description": "Push path only: any name for the device. Binds the station's token to it, so a second device cannot use the same address."
+    },
+    "software": {
+      "type": "string",
+      "maxLength": 48,
+      "description": "Push path only: the firmware or library that sent the reading, e.g. nuasense-arduino/0.1.0."
+    },
+    "temperature": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 60,
+      "description": "°C"
+    },
+    "humidity": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "%"
+    },
+    "pressure": {
+      "type": "number",
+      "minimum": 300,
+      "maximum": 1100,
+      "description": "hPa"
+    },
+    "light": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 200000,
+      "description": "lux"
+    },
+    "wind_speed": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 120,
+      "description": "m/s"
+    },
+    "wind_gusts": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 150,
+      "description": "m/s"
+    },
+    "wind_direction": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 360,
+      "description": "°"
+    },
+    "rain_pulses": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 10000,
+      "description": "count"
+    },
+    "rain_mm": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 300,
+      "description": "mm"
+    },
+    "uv_index": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 20,
+      "description": "index"
+    },
+    "leaf_wetness": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "%; several sensors: leaf_wetness_2 … leaf_wetness_8"
+    },
+    "soil_moisture": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "% vol; several sensors: soil_moisture_2 … soil_moisture_8"
+    },
+    "soil_temperature": {
+      "type": "number",
+      "minimum": -30,
+      "maximum": 80,
+      "description": "°C; several sensors: soil_temperature_2 … soil_temperature_8"
+    },
+    "soil_ec": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 50,
+      "description": "mS/cm; several sensors: soil_ec_2 … soil_ec_8"
+    },
+    "soil_tension": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 2000,
+      "description": "kPa; several sensors: soil_tension_2 … soil_tension_8"
+    },
+    "soil_ph": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 14,
+      "description": "pH; several sensors: soil_ph_2 … soil_ph_8"
+    },
+    "probe_temperature": {
+      "type": "number",
+      "minimum": -40,
+      "maximum": 100,
+      "description": "°C; several sensors: probe_temperature_2 … probe_temperature_8"
+    },
+    "water_level": {
+      "type": "number",
+      "minimum": -10,
+      "maximum": 1000,
+      "description": "m; several sensors: water_level_2 … water_level_8"
+    },
+    "water_temperature": {
+      "type": "number",
+      "minimum": -5,
+      "maximum": 60,
+      "description": "°C; several sensors: water_temperature_2 … water_temperature_8"
+    },
+    "water_ec": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 200,
+      "description": "mS/cm; several sensors: water_ec_2 … water_ec_8"
+    },
+    "water_ph": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 14,
+      "description": "pH; several sensors: water_ph_2 … water_ph_8"
+    },
+    "dissolved_oxygen": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 30,
+      "description": "mg/L; several sensors: dissolved_oxygen_2 … dissolved_oxygen_8"
+    },
+    "turbidity": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5000,
+      "description": "NTU; several sensors: turbidity_2 … turbidity_8"
+    },
+    "flow_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100000,
+      "description": "L/min; several sensors: flow_rate_2 … flow_rate_8"
+    },
+    "water_pressure": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 50,
+      "description": "bar; several sensors: water_pressure_2 … water_pressure_8"
+    },
+    "greenhouse_temperature": {
+      "type": "number",
+      "minimum": -20,
+      "maximum": 70,
+      "description": "°C; several sensors: greenhouse_temperature_2 … greenhouse_temperature_8"
+    },
+    "greenhouse_humidity": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "%; several sensors: greenhouse_humidity_2 … greenhouse_humidity_8"
+    },
+    "co2": {
+      "type": "number",
+      "minimum": 100,
+      "maximum": 10000,
+      "description": "ppm; several sensors: co2_2 … co2_8"
+    },
+    "par": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 3000,
+      "description": "µmol/m²/s; several sensors: par_2 … par_8"
+    },
+    "leaf_temperature": {
+      "type": "number",
+      "minimum": -30,
+      "maximum": 70,
+      "description": "°C; several sensors: leaf_temperature_2 … leaf_temperature_8"
+    },
+    "stem_diameter": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1000000,
+      "description": "µm; several sensors: stem_diameter_2 … stem_diameter_8"
+    },
+    "ammonia": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1000,
+      "description": "ppm; several sensors: ammonia_2 … ammonia_8"
+    },
+    "hive_weight": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 500,
+      "description": "kg; several sensors: hive_weight_2 … hive_weight_8"
+    },
+    "hive_temperature": {
+      "type": "number",
+      "minimum": -30,
+      "maximum": 70,
+      "description": "°C; several sensors: hive_temperature_2 … hive_temperature_8"
+    },
+    "hive_humidity": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "%; several sensors: hive_humidity_2 … hive_humidity_8"
+    },
+    "storage_temperature": {
+      "type": "number",
+      "minimum": -50,
+      "maximum": 60,
+      "description": "°C; several sensors: storage_temperature_2 … storage_temperature_8"
+    },
+    "storage_humidity": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "%; several sensors: storage_humidity_2 … storage_humidity_8"
+    },
+    "ethylene": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1000,
+      "description": "ppm; several sensors: ethylene_2 … ethylene_8"
+    },
+    "grain_moisture": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 60,
+      "description": "%; several sensors: grain_moisture_2 … grain_moisture_8"
+    },
+    "grain_temperature": {
+      "type": "number",
+      "minimum": -30,
+      "maximum": 90,
+      "description": "°C; several sensors: grain_temperature_2 … grain_temperature_8"
+    },
+    "door_open": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "0/1; several sensors: door_open_2 … door_open_8"
+    },
+    "gps_latitude": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90,
+      "description": "°"
+    },
+    "gps_longitude": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180,
+      "description": "°"
+    },
+    "gps_speed": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 300,
+      "description": "km/h"
+    },
+    "pm1": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 2000,
+      "description": "µg/m³; several sensors: pm1_2 … pm1_8"
+    },
+    "pm25": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 2000,
+      "description": "µg/m³; several sensors: pm25_2 … pm25_8"
+    },
+    "pm10": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 2000,
+      "description": "µg/m³; several sensors: pm10_2 … pm10_8"
+    },
+    "voc_index": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 500,
+      "description": "index; several sensors: voc_index_2 … voc_index_8"
+    },
+    "battery_voltage": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "V"
+    },
+    "battery_percent": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "%"
+    },
+    "power": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 10000000,
+      "description": "W; several sensors: power_2 … power_8"
+    },
+    "pv_power": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 10000000,
+      "description": "W; several sensors: pv_power_2 … pv_power_8"
+    }
+  },
+  "patternProperties": {
+    "^leaf_wetness_[1-8]$": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "%, channel 1–8"
+    },
+    "^soil_moisture_[1-8]$": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "% vol, channel 1–8"
+    },
+    "^soil_temperature_[1-8]$": {
+      "type": "number",
+      "minimum": -30,
+      "maximum": 80,
+      "description": "°C, channel 1–8"
+    },
+    "^soil_ec_[1-8]$": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 50,
+      "description": "mS/cm, channel 1–8"
+    },
+    "^soil_tension_[1-8]$": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 2000,
+      "description": "kPa, channel 1–8"
+    },
+    "^soil_ph_[1-8]$": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 14,
+      "description": "pH, channel 1–8"
+    },
+    "^probe_temperature_[1-8]$": {
+      "type": "number",
+      "minimum": -40,
+      "maximum": 100,
+      "description": "°C, channel 1–8"
+    },
+    "^water_level_[1-8]$": {
+      "type": "number",
+      "minimum": -10,
+      "maximum": 1000,
+      "description": "m, channel 1–8"
+    },
+    "^water_temperature_[1-8]$": {
+      "type": "number",
+      "minimum": -5,
+      "maximum": 60,
+      "description": "°C, channel 1–8"
+    },
+    "^water_ec_[1-8]$": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 200,
+      "description": "mS/cm, channel 1–8"
+    },
+    "^water_ph_[1-8]$": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 14,
+      "description": "pH, channel 1–8"
+    },
+    "^dissolved_oxygen_[1-8]$": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 30,
+      "description": "mg/L, channel 1–8"
+    },
+    "^turbidity_[1-8]$": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5000,
+      "description": "NTU, channel 1–8"
+    },
+    "^flow_rate_[1-8]$": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100000,
+      "description": "L/min, channel 1–8"
+    },
+    "^water_pressure_[1-8]$": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 50,
+      "description": "bar, channel 1–8"
+    },
+    "^greenhouse_temperature_[1-8]$": {
+      "type": "number",
+      "minimum": -20,
+      "maximum": 70,
+      "description": "°C, channel 1–8"
+    },
+    "^greenhouse_humidity_[1-8]$": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "%, channel 1–8"
+    },
+    "^co2_[1-8]$": {
+      "type": "number",
+      "minimum": 100,
+      "maximum": 10000,
+      "description": "ppm, channel 1–8"
+    },
+    "^par_[1-8]$": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 3000,
+      "description": "µmol/m²/s, channel 1–8"
+    },
+    "^leaf_temperature_[1-8]$": {
+      "type": "number",
+      "minimum": -30,
+      "maximum": 70,
+      "description": "°C, channel 1–8"
+    },
+    "^stem_diameter_[1-8]$": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1000000,
+      "description": "µm, channel 1–8"
+    },
+    "^ammonia_[1-8]$": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1000,
+      "description": "ppm, channel 1–8"
+    },
+    "^hive_weight_[1-8]$": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 500,
+      "description": "kg, channel 1–8"
+    },
+    "^hive_temperature_[1-8]$": {
+      "type": "number",
+      "minimum": -30,
+      "maximum": 70,
+      "description": "°C, channel 1–8"
+    },
+    "^hive_humidity_[1-8]$": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "%, channel 1–8"
+    },
+    "^storage_temperature_[1-8]$": {
+      "type": "number",
+      "minimum": -50,
+      "maximum": 60,
+      "description": "°C, channel 1–8"
+    },
+    "^storage_humidity_[1-8]$": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "%, channel 1–8"
+    },
+    "^ethylene_[1-8]$": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1000,
+      "description": "ppm, channel 1–8"
+    },
+    "^grain_moisture_[1-8]$": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 60,
+      "description": "%, channel 1–8"
+    },
+    "^grain_temperature_[1-8]$": {
+      "type": "number",
+      "minimum": -30,
+      "maximum": 90,
+      "description": "°C, channel 1–8"
+    },
+    "^door_open_[1-8]$": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "0/1, channel 1–8"
+    },
+    "^pm1_[1-8]$": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 2000,
+      "description": "µg/m³, channel 1–8"
+    },
+    "^pm25_[1-8]$": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 2000,
+      "description": "µg/m³, channel 1–8"
+    },
+    "^pm10_[1-8]$": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 2000,
+      "description": "µg/m³, channel 1–8"
+    },
+    "^voc_index_[1-8]$": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 500,
+      "description": "index, channel 1–8"
+    },
+    "^power_[1-8]$": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 10000000,
+      "description": "W, channel 1–8"
+    },
+    "^pv_power_[1-8]$": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 10000000,
+      "description": "W, channel 1–8"
+    }
   },
   "examples": [
-    { "time": "2026-11-02T15:02:00Z", "temperature": 17.4, "humidity": 90, "pressure": 759.9, "light": 4134, "wind_speed": 2.0, "wind_gusts": 4.5, "wind_direction": 110, "rain_mm": 0.0 }
+    {
+      "device_id": "esp32-garden",
+      "temperature": 21.4,
+      "humidity": 63,
+      "pressure": 836.2,
+      "rain_mm": 0.2,
+      "soil_moisture": 34,
+      "soil_moisture_2": 41.5
+    },
+    {
+      "device_id": "coldroom-1",
+      "storage_temperature": 4.1,
+      "storage_humidity": 92,
+      "ethylene": 0.3,
+      "door_open": 0
+    },
+    {
+      "device_id": "hive-07",
+      "hive_weight": 42.6,
+      "hive_temperature": 34.8,
+      "hive_humidity": 61
+    }
   ]
 }

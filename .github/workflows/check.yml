@@ -1,0 +1,44 @@
+name: Check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  schema:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install jsonschema
+      - name: Schema is valid and its examples pass it
+        run: |
+          python - <<'PY'
+          import json, jsonschema
+          s = json.load(open("nuasense-reading.schema.json"))
+          jsonschema.Draft202012Validator.check_schema(s)
+          v = jsonschema.Draft202012Validator(s)
+          for ex in s["examples"]:
+              v.validate(ex)
+          for bad in [{"temperature_2": 20}, {"soil_moisture_9": 3}, {"soil_npk": 5}, {"co2": 6.5}]:
+              assert not v.is_valid(bad), bad
+          print("schema ok,", len(s["examples"]), "examples")
+          PY
+      - name: MicroPython module compiles
+        run: python -m py_compile micropython/nuasense.py
+
+  esphome:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install esphome
+      - name: ESPHome configuration validates
+        run: |
+          printf 'wifi_ssid: "ci"\nwifi_password: "ci-password"\n' > esphome/secrets.yaml
+          esphome config esphome/nuasense-weather-soil.yaml > /dev/null
+          echo "esphome config ok"
