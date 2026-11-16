@@ -4,7 +4,7 @@ The shape of one reading as NuaSense stores it: a weather station, and everythin
 
 - [`nuasense-reading.schema.json`](nuasense-reading.schema.json): JSON Schema (2020-12) of a reading, generated from the receiver's own vocabulary.
 - [`mappings/ecowitt.md`](mappings/ecowitt.md): how Ecowitt / Ambient / Wunderground upload fields become a reading.
-- Your own sensor: [Arduino / PlatformIO](https://github.com/nuasense/nuasense-arduino) · [ESPHome](esphome/nuasense-weather-soil.yaml) · [MicroPython / Python](micropython/nuasense.py) · [Tasmota](tasmota/nuasense.be) · [rtl_433](guides/rtl433.md) · [Datacake, TagoIO, Ubidots](guides/datacake-tagoio-ubidots.md)
+- Your own sensor: [Arduino / PlatformIO](https://github.com/nuasense/nuasense-arduino) · [ESPHome](esphome/nuasense-weather-soil.yaml) · [Python (Raspberry Pi, any computer): `pip install nuasense`](https://pypi.org/project/nuasense/) · [MicroPython (ESP32, Pico W)](micropython/nuasense.py) · [Tasmota](tasmota/nuasense.be) · [rtl_433](guides/rtl433.md) · [Datacake, TagoIO, Ubidots](guides/datacake-tagoio-ubidots.md)
 
 ## Your own sensor in one POST
 
